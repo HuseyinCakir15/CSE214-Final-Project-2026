@@ -14,6 +14,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     private String email;
+      @Column(name = "password_hash")  // ← BU SATIRI EKLEYİN
     private String passwordHash;
     private String gender;
 

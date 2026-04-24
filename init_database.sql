@@ -2,14 +2,14 @@ CREATE DATABASE IF NOT EXISTS ecommerce_db;
 USE ecommerce_db;
 
 CREATE TABLE IF NOT EXISTS categories (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    parent_id INT,
+    parent_id BIGINT,
     FOREIGN KEY (parent_id) REFERENCES categories(id)
 );
 
 CREATE TABLE IF NOT EXISTS users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(150) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     role_type ENUM('admin', 'corporate', 'individual') NOT NULL,
@@ -18,8 +18,8 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE TABLE IF NOT EXISTS customer_profiles (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
     age INT,
     city VARCHAR(100),
     membership_type ENUM('Bronze', 'Silver', 'Gold') DEFAULT 'Bronze',
@@ -29,8 +29,8 @@ CREATE TABLE IF NOT EXISTS customer_profiles (
 );
 
 CREATE TABLE IF NOT EXISTS stores (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    owner_id INT NOT NULL,
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    owner_id BIGINT NOT NULL,
     name VARCHAR(150) NOT NULL,
     status ENUM('open', 'closed') DEFAULT 'open',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -38,9 +38,9 @@ CREATE TABLE IF NOT EXISTS stores (
 );
 
 CREATE TABLE IF NOT EXISTS products (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    store_id INT NOT NULL,
-    category_id INT,
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    store_id BIGINT NOT NULL,
+    category_id BIGINT,
     sku VARCHAR(100),
     name VARCHAR(500) NOT NULL,
     unit_price DECIMAL(10,2) NOT NULL,
@@ -52,9 +52,9 @@ CREATE TABLE IF NOT EXISTS products (
 );
 
 CREATE TABLE IF NOT EXISTS orders (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    store_id INT NOT NULL,
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    store_id BIGINT NOT NULL,
     status VARCHAR(100) DEFAULT 'pending',
     grand_total DECIMAL(10,2),
     payment_method VARCHAR(50),
@@ -64,9 +64,9 @@ CREATE TABLE IF NOT EXISTS orders (
 );
 
 CREATE TABLE IF NOT EXISTS order_items (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    order_id INT NOT NULL,
-    product_id INT NOT NULL,
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    order_id BIGINT NOT NULL,
+    product_id BIGINT NOT NULL,
     quantity INT NOT NULL,
     price DECIMAL(10,2) NOT NULL,
     FOREIGN KEY (order_id) REFERENCES orders(id),
@@ -74,8 +74,8 @@ CREATE TABLE IF NOT EXISTS order_items (
 );
 
 CREATE TABLE IF NOT EXISTS shipments (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    order_id INT NOT NULL,
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    order_id BIGINT NOT NULL,
     warehouse VARCHAR(100),
     mode VARCHAR(50),
     status VARCHAR(50) DEFAULT 'pending',
@@ -86,9 +86,9 @@ CREATE TABLE IF NOT EXISTS shipments (
 );
 
 CREATE TABLE IF NOT EXISTS reviews (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    product_id INT NOT NULL,
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    product_id BIGINT NOT NULL,
     star_rating DECIMAL(3,1),
     sentiment VARCHAR(50),
     review_title VARCHAR(500),
@@ -99,10 +99,10 @@ CREATE TABLE IF NOT EXISTS reviews (
 );
 
 CREATE TABLE IF NOT EXISTS comments (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    product_id INT NOT NULL,
-    review_id INT,
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    product_id BIGINT NOT NULL,
+    review_id BIGINT,
     comment_text TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id),
@@ -2139,3 +2139,5 @@ INSERT INTO reviews (user_id, product_id, star_rating, sentiment, review_title, 
 INSERT INTO reviews (user_id, product_id, star_rating, sentiment, review_title, review_text) VALUES (50, 198, 4.2, 'positive', 'It is the best tv if you are getting it in 10-12k,Good price but the OS lags,GARBAGE QUALITY,Good product.,Good quality,Great experience everything is fantastic 🤠,Super picture quality and sound quality,Awesome', 'Pros- xiomi 5a is best in budget-Nice picture quality-Very nice audio output- Full of featureCONS- sometimes tv lags-Sometimes stucksIn this prize range all tv having cons like this.::Overall nice tv,The product in this price range is good but as it is running in Android 12 it lags. I hope after few updates the lags problem will be resolved,Useless product and useless quality. Display issues within 7 months and service center is not upto the mark. Go for better brands where quality is assured. I would wish if there was option of negative stars.,Uses as connectes TV the picture is very good. I was hopping a best level of song. Globaly it is a good product.,https://m.media-amazon.com/images/W/WEBP_402378-T1/images/I/61spXDbojZL._SY88.jpg,Greater then ever,Good quality,Good 👍');
 INSERT INTO reviews (user_id, product_id, star_rating, sentiment, review_title, review_text) VALUES (46, 199, 4.4, 'positive', 'You might be able to get away by using other usb too,Built well but there are flaws.,Good alternative for Apple cable,Good alternative,Best buy,Good,Value for Money,Works as advertised.', 'Recently ordered other. Usb for just 150 rsThe charging speed was same.This is not my main usb i use apple orignal onesHowever it seems like i over paid for getting the made for iphone tag,Product is built well, better than the Apple’s charging cable. This isn’t working with the charging adapters but works well with the power banks.,Charging time is okay as totally depends on adapter which we are using,If someone is looking for alternative to the expensive Apple Brand charging cables then this product will be the right choice.,Awesome product, I use this frequently inside my car. Writing this after 2 months of regular usage.,Alternate charging cable.,Good one for iPhone - Lightning Charge.,The Cable is helpful for connecting your iPhone to your car for CarPlay.');
 INSERT INTO reviews (user_id, product_id, star_rating, sentiment, review_title, review_text) VALUES (10, 200, 4.1, 'positive', 'Good product,Working,Something is better than nothing,Average,Good,good product,Good work,Good', 'Good product n it works fine,It\'s good one but price more than quality,Connecting to sensor for using is slightly a headache...... after Connecting sensor you need to use it in a delicate way,Useful itom,Good,good product and good responce,Good work,Worth for money');
+
+UPDATE users SET password_hash = '$2b$10$OxRrvV/CQJi0mIKdQpepK.QYHfA9jJKpa0pDjxvNAIpWr4Kt/aNNW' where id > 0;

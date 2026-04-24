@@ -1,0 +1,227 @@
+<div class="admin-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-icon">◈</span>
+      <span class="brand-name">ShopX Admin</span>
+    </div>
+    <nav class="sidebar-nav">
+      <p class="nav-label">MAIN MENU</p>
+      <button class="nav-item" [class.active]="activeTab === 'dashboard'" (click)="setTab('dashboard')">
+        📊 Dashboard
+      </button>
+      <button class="nav-item" [class.active]="activeTab === 'users'" (click)="setTab('users')">
+        👥 Kullanıcılar
+      </button>
+      <button class="nav-item" [class.active]="activeTab === 'stores'" (click)="setTab('stores')">
+        🏪 Mağazalar
+      </button>
+      <button class="nav-item" [class.active]="activeTab === 'orders'" (click)="setTab('orders')">
+        📦 Siparişler
+      </button>
+      <button class="nav-item" [class.active]="activeTab === 'categories'" (click)="setTab('categories')">
+        🗂️ Kategoriler
+      </button>
+    </nav>
+    <button class="logout-btn" (click)="logout()">🚪 Çıkış Yap</button>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+
+    <!-- DASHBOARD -->
+    @if (activeTab === 'dashboard') {
+      <div class="page-header">
+        <h1>Platform Dashboard</h1>
+        <p class="page-sub">Platform geneli istatistikler</p>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">👥</div>
+          <div class="stat-info">
+            <p class="stat-label">Toplam Kullanıcı</p>
+            <h2 class="stat-value">{{ totalUsers }}</h2>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📦</div>
+          <div class="stat-info">
+            <p class="stat-label">Toplam Sipariş</p>
+            <h2 class="stat-value">{{ totalOrders }}</h2>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🏪</div>
+          <div class="stat-info">
+            <p class="stat-label">Toplam Mağaza</p>
+            <h2 class="stat-value">{{ totalStores }}</h2>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🗂️</div>
+          <div class="stat-info">
+            <p class="stat-label">Toplam Kategori</p>
+            <h2 class="stat-value">{{ totalCategories }}</h2>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- KULLANICILAR -->
+    @if (activeTab === 'users') {
+      <div class="page-header">
+        <h1>Kullanıcı Yönetimi</h1>
+        <p class="page-sub">{{ totalUsers }} kullanıcı</p>
+      </div>
+      <div class="table-card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Email</th>
+              <th>Rol</th>
+              <th>Cinsiyet</th>
+              <th>İşlem</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (user of users; track user.id) {
+              <tr>
+                <td>#{{ user.id }}</td>
+                <td>{{ user.email }}</td>
+                <td><span class="role-badge" [class]="user.roleType">{{ user.roleType }}</span></td>
+                <td>{{ user.gender ?? '—' }}</td>
+                <td>
+                  <button class="btn-danger-sm" (click)="deleteUser(user.id)">Sil</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <!-- MAĞAZALAR -->
+    @if (activeTab === 'stores') {
+      <div class="page-header">
+        <h1>Mağaza Yönetimi</h1>
+        <p class="page-sub">{{ totalStores }} mağaza</p>
+      </div>
+      <div class="table-card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Mağaza Adı</th>
+              <th>Sahibi</th>
+              <th>Durum</th>
+              <th>İşlem</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (store of stores; track store.id) {
+              <tr>
+                <td>#{{ store.id }}</td>
+                <td>{{ store.name }}</td>
+                <td>{{ store.owner?.email ?? '—' }}</td>
+                <td>
+                  <span class="status-badge"
+                    [class.active]="store.status === 'open'"
+                    [class.inactive]="store.status === 'closed'">
+                    {{ store.status === 'open' ? '✅ Açık' : '🔴 Kapalı' }}
+                  </span>
+                </td>
+                <td class="action-btns">
+                  @if (store.status === 'closed') {
+                    <button class="btn-toggle" (click)="openStore(store)">Aç</button>
+                  } @else {
+                    <button class="btn-danger-sm" (click)="closeStore(store)">Kapat</button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <!-- SİPARİŞLER -->
+    @if (activeTab === 'orders') {
+      <div class="page-header">
+        <h1>Sipariş Yönetimi</h1>
+        <p class="page-sub">{{ totalOrders }} sipariş</p>
+      </div>
+      <div class="table-card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Kullanıcı</th>
+              <th>Mağaza</th>
+              <th>Ödeme</th>
+              <th>Durum</th>
+              <th>Toplam</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (order of orders; track order.id) {
+              <tr>
+                <td>#{{ order.id }}</td>
+                <td>{{ order.user?.email ?? '—' }}</td>
+                <td>{{ order.store?.name ?? '—' }}</td>
+                <td>{{ order.paymentMethod ?? '—' }}</td>
+                <td>
+                  <span class="status-badge"
+                    [class.active]="order.status === 'completed' || order.status === 'delivered'"
+                    [class.pending]="order.status === 'pending' || order.status === 'shipped'"
+                    [class.inactive]="order.status === 'cancelled'">
+                    {{ order.status }}
+                  </span>
+                </td>
+                <td>{{ order.grandTotal ? '₺' + order.grandTotal : '—' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <!-- KATEGORİLER -->
+    @if (activeTab === 'categories') {
+      <div class="page-header">
+        <h1>Kategori Yönetimi</h1>
+        <p class="page-sub">{{ totalCategories }} kategori</p>
+      </div>
+      <div class="add-form">
+        <input class="form-input" [(ngModel)]="newCategoryName" placeholder="Yeni kategori adı..." />
+        <button class="btn-primary" (click)="addCategory()">+ Ekle</button>
+      </div>
+      <div class="table-card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Kategori Adı</th>
+              <th>Üst Kategori</th>
+              <th>İşlem</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (cat of categories; track cat.id) {
+              <tr>
+                <td>#{{ cat.id }}</td>
+                <td>{{ cat.name }}</td>
+                <td>{{ cat.parent?.name ?? '—' }}</td>
+                <td>
+                  <button class="btn-danger-sm" (click)="deleteCategory(cat.id)">Sil</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+  </main>
+</div>

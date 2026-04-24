@@ -1,0 +1,85 @@
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="nav-brand">
+    <span class="brand-icon">◈</span>
+    <span class="brand-name">ShopX</span>
+  </div>
+  <div class="nav-actions">
+    <input
+      class="search-input"
+      type="text"
+      placeholder="Ürün ara..."
+      [(ngModel)]="searchQuery"
+      (input)="onSearch()"
+    />
+    <a routerLink="/login" class="btn-login">Giriş Yap</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-content">
+    <h1 class="hero-title">En İyi Ürünler,<br /><span class="accent">En İyi Fiyatlar</span></h1>
+    <p class="hero-sub">Binlerce ürün arasından ihtiyacına en uygununu bul.</p>
+    <a routerLink="/register" class="btn-hero">Hemen Başla</a>
+  </div>
+</section>
+
+<!-- KATEGORİLER -->
+<section class="section">
+  <h2 class="section-title">Kategoriler</h2>
+  <div class="categories-grid">
+    @for (cat of categories; track cat) {
+      <button class="cat-chip" [class.active]="selectedCategory === cat" (click)="filterByCategory(cat)">
+        {{ cat }}
+      </button>
+    }
+  </div>
+</section>
+
+<!-- ÜRÜNLER -->
+<section class="section">
+  <div class="section-header">
+    <h2 class="section-title">
+      {{ searchQuery ? 'Arama Sonuçları' : selectedCategory !== 'Tümü' ? selectedCategory : 'Öne Çıkan Ürünler' }}
+    </h2>
+    @if (loading) {
+      <span class="loading-text">Yükleniyor...</span>
+    }
+  </div>
+
+  @if (errorMessage) {
+    <div class="error-box">{{ errorMessage }}</div>
+  }
+
+  <div class="products-grid">
+    @for (product of filteredProducts; track product.id) {
+      <div class="product-card">
+        <div class="product-badge"
+          [class.positive]="(product.rating ?? 0) >= 4"
+          [class.neutral]="(product.rating ?? 0) >= 3 && (product.rating ?? 0) < 4"
+          [class.negative]="(product.rating ?? 0) < 3">
+          {{ (product.rating ?? 0) >= 4 ? '👍 İyi' : (product.rating ?? 0) >= 3 ? '😐 Orta' : '👎 Düşük' }}
+        </div>
+        <div class="product-info">
+          <h3 class="product-name">{{ product.name }}</h3>
+          <p class="product-category">{{ product.category?.name }}</p>
+          <div class="product-footer">
+            <span class="product-price">{{ (product.discountedPrice ?? product.unitPrice) | currency:'TRY':'₺':'1.2-2' }}</span>
+            <span class="product-rating">⭐ {{ product.rating?.toFixed(1) ?? '—' }}</span>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (!loading && filteredProducts.length === 0) {
+      <div class="empty-state">Ürün bulunamadı.</div>
+    }
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <p>© 2026 ShopX. Tüm hakları saklıdır.</p>
+</footer>

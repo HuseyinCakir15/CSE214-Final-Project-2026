@@ -1,0 +1,43 @@
+<div class="register-container">
+  <div class="register-box">
+    <h2>Kayıt Ol</h2>
+
+    @if (errorMessage) {
+      <div class="error-message">{{ errorMessage }}</div>
+    }
+
+    @if (successMessage) {
+      <div class="success-message">{{ successMessage }}</div>
+    }
+
+    <input
+      type="email"
+      placeholder="Email"
+      [(ngModel)]="email"
+    />
+
+    <input
+      type="password"
+      placeholder="Şifre"
+      [(ngModel)]="password"
+    />
+
+    <select [(ngModel)]="gender">
+      <option value="">Cinsiyet (opsiyonel)</option>
+      <option value="male">Erkek</option>
+      <option value="female">Kadın</option>
+      <option value="other">Diğer</option>
+    </select>
+
+    <select [(ngModel)]="roleType">
+      <option value="individual">Bireysel Kullanıcı</option>
+      <option value="corporate">Kurumsal Kullanıcı</option>
+    </select>
+
+    <button (click)="onRegister()" [disabled]="loading">
+      {{ loading ? 'Kayıt yapılıyor...' : 'Kayıt Ol' }}
+    </button>
+
+    <p>Zaten hesabın var mı? <a routerLink="/login">Giriş Yap</a></p>
+  </div>
+</div>

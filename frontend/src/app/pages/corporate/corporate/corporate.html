@@ -1,0 +1,245 @@
+<div class="corporate-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-icon">◈</span>
+      <span class="brand-name">{{ store?.name ?? 'Mağazam' }}</span>
+    </div>
+    <nav class="sidebar-nav">
+      <p class="nav-label">MAIN MENU</p>
+      <button class="nav-item" [class.active]="activeTab === 'dashboard'" (click)="setTab('dashboard')">
+        📊 Dashboard
+      </button>
+      <button class="nav-item" [class.active]="activeTab === 'products'" (click)="setTab('products')">
+        📦 Ürünler
+      </button>
+      <button class="nav-item" [class.active]="activeTab === 'orders'" (click)="setTab('orders')">
+        🛒 Siparişler
+      </button>
+      <button class="nav-item" [class.active]="activeTab === 'reviews'" (click)="setTab('reviews')">
+        ⭐ İncelemeler
+      </button>
+    </nav>
+    <button class="logout-btn" (click)="logout()">🚪 Çıkış Yap</button>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+
+    <!-- DASHBOARD -->
+    @if (activeTab === 'dashboard') {
+      <div class="page-header">
+        <div>
+          <h1>Mağaza Dashboard</h1>
+          <p class="page-sub">
+            {{ store?.name }} —
+            <span [class.open]="store?.status === 'open'" [class.closed]="store?.status === 'closed'">
+              {{ store?.status === 'open' ? '✅ Açık' : '🔴 Kapalı' }}
+            </span>
+          </p>
+        </div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">📦</div>
+          <div class="stat-info">
+            <p class="stat-label">Toplam Ürün</p>
+            <h2 class="stat-value">{{ products.length }}</h2>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🛒</div>
+          <div class="stat-info">
+            <p class="stat-label">Toplam Sipariş</p>
+            <h2 class="stat-value">{{ orders.length }}</h2>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">💰</div>
+          <div class="stat-info">
+            <p class="stat-label">Toplam Gelir</p>
+            <h2 class="stat-value">₺{{ totalRevenue | number:'1.2-2' }}</h2>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">⭐</div>
+          <div class="stat-info">
+            <p class="stat-label">İnceleme</p>
+            <h2 class="stat-value">{{ reviews.length }}</h2>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ÜRÜNLER -->
+    @if (activeTab === 'products') {
+      <div class="page-header">
+        <div>
+          <h1>Ürün Yönetimi</h1>
+          <p class="page-sub">{{ products.length }} ürün</p>
+        </div>
+        <button class="btn-primary" (click)="openAddProduct()">+ Ürün Ekle</button>
+      </div>
+
+      @if (showProductForm) {
+        <div class="form-card">
+          <h3>{{ editingProduct ? 'Ürünü Düzenle' : 'Yeni Ürün Ekle' }}</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Ürün Adı</label>
+              <input class="form-input" [(ngModel)]="productForm.name" placeholder="Ürün adı..." />
+            </div>
+            <div class="form-group">
+              <label>SKU</label>
+              <input class="form-input" [(ngModel)]="productForm.sku" placeholder="SKU..." />
+            </div>
+            <div class="form-group">
+              <label>Fiyat (₺)</label>
+              <input class="form-input" type="number" [(ngModel)]="productForm.unitPrice" placeholder="0.00" />
+            </div>
+            <div class="form-group">
+              <label>İndirimli Fiyat (₺)</label>
+              <input class="form-input" type="number" [(ngModel)]="productForm.discountedPrice" placeholder="0.00" />
+            </div>
+            <div class="form-group">
+              <label>Stok</label>
+              <input class="form-input" type="number" [(ngModel)]="productForm.stock" placeholder="0" />
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn-primary" (click)="saveProduct()">{{ editingProduct ? 'Güncelle' : 'Ekle' }}</button>
+            <button class="btn-secondary" (click)="showProductForm = false">İptal</button>
+          </div>
+        </div>
+      }
+
+      <div class="table-card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Ürün Adı</th>
+              <th>SKU</th>
+              <th>Fiyat</th>
+              <th>İnd. Fiyat</th>
+              <th>Stok</th>
+              <th>Kategori</th>
+              <th>İşlem</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (product of products; track product.id) {
+              <tr>
+                <td>#{{ product.id }}</td>
+                <td>{{ product.name }}</td>
+                <td>{{ product.sku ?? '—' }}</td>
+                <td>{{ product.unitPrice ? '₺' + product.unitPrice : '—' }}</td>
+                <td>{{ product.discountedPrice ? '₺' + product.discountedPrice : '—' }}</td>
+                <td>{{ product.stock ?? '—' }}</td>
+                <td>{{ product.category?.name ?? '—' }}</td>
+                <td class="action-btns">
+                  <button class="btn-toggle" (click)="openEditProduct(product)">Düzenle</button>
+                  <button class="btn-danger-sm" (click)="deleteProduct(product.id!)">Sil</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <!-- SİPARİŞLER -->
+    @if (activeTab === 'orders') {
+      <div class="page-header">
+        <div>
+          <h1>Sipariş Yönetimi</h1>
+          <p class="page-sub">{{ orders.length }} sipariş</p>
+        </div>
+      </div>
+      <div class="table-card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Müşteri</th>
+              <th>Ödeme</th>
+              <th>Toplam</th>
+              <th>Durum</th>
+              <th>Güncelle</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (order of orders; track order.id) {
+              <tr>
+                <td>#{{ order.id }}</td>
+                <td>{{ order.user?.email ?? '—' }}</td>
+                <td>{{ order.paymentMethod ?? '—' }}</td>
+                <td>{{ order.grandTotal ? '₺' + order.grandTotal : '—' }}</td>
+                <td>
+                  <span class="status-badge"
+                    [class.active]="order.status === 'completed' || order.status === 'delivered'"
+                    [class.pending]="order.status === 'pending' || order.status === 'shipped'"
+                    [class.inactive]="order.status === 'cancelled'">
+                    {{ order.status }}
+                  </span>
+                </td>
+                <td>
+                  <select class="status-select" (change)="updateOrderStatus(order, $any($event.target).value)">
+                    <option value="">Seç...</option>
+                    <option value="pending">Bekliyor</option>
+                    <option value="shipped">Kargoda</option>
+                    <option value="delivered">Teslim Edildi</option>
+                    <option value="cancelled">İptal</option>
+                  </select>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <!-- İNCELEMELER -->
+    @if (activeTab === 'reviews') {
+      <div class="page-header">
+        <div>
+          <h1>İnceleme Yönetimi</h1>
+          <p class="page-sub">{{ reviews.length }} inceleme</p>
+        </div>
+      </div>
+      <div class="table-card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Kullanıcı</th>
+              <th>Ürün</th>
+              <th>Puan</th>
+              <th>Duygu</th>
+              <th>Başlık</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (review of reviews; track review.id) {
+              <tr>
+                <td>{{ review.user?.email ?? '—' }}</td>
+                <td>{{ review.product?.name ?? '—' }}</td>
+                <td>⭐ {{ review.starRating ?? '—' }}</td>
+                <td>
+                  <span class="status-badge"
+                    [class.active]="review.sentiment === 'positive'"
+                    [class.pending]="review.sentiment === 'neutral'"
+                    [class.inactive]="review.sentiment === 'negative'">
+                    {{ review.sentiment ?? '—' }}
+                  </span>
+                </td>
+                <td>{{ review.reviewTitle ?? '—' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+  </main>
+</div>
