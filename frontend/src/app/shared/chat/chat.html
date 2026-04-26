@@ -1,0 +1,79 @@
+<!-- CHAT BUTTON -->
+<div class="chat-wrapper">
+  <button class="chat-toggle" (click)="toggleChat()">
+    @if (isOpen) {
+      ✕
+    } @else {
+      🤖
+    }
+  </button>
+
+  @if (isOpen) {
+    <div class="chat-box">
+      <!-- HEADER -->
+      <div class="chat-header">
+        <div class="chat-header-info">
+          <span class="chat-avatar">🤖</span>
+          <div>
+            <p class="chat-title">ShopX AI</p>
+            <p class="chat-status">● Online</p>
+          </div>
+        </div>
+        <button class="chat-close" (click)="toggleChat()">✕</button>
+      </div>
+
+      <!-- MESSAGES -->
+      <div class="chat-messages">
+        @for (msg of messages; track $index) {
+          <div class="message" [class.user]="msg.role === 'user'" [class.bot]="msg.role === 'bot'">
+            @if (msg.loading) {
+              <div class="loading-dots">
+                <span></span><span></span><span></span>
+              </div>
+            } @else {
+              <p class="message-text">{{ msg.text }}</p>
+              @if (msg.data && msg.data.length > 0) {
+                <div class="data-table-wrapper">
+                  <table class="mini-table">
+                    <thead>
+                      <tr>
+                        @for (key of getKeys(msg.data[0]); track key) {
+                          <th>{{ key }}</th>
+                        }
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (row of msg.data.slice(0, 5); track $index) {
+                        <tr>
+                          @for (key of getKeys(row); track key) {
+                            <td>{{ row[key] }}</td>
+                          }
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                  @if (msg.data.length > 5) {
+                    <p class="data-more">+{{ msg.data.length - 5 }} daha fazla sonuç</p>
+                  }
+                </div>
+              }
+            }
+          </div>
+        }
+      </div>
+
+      <!-- INPUT -->
+      <div class="chat-input-area">
+        <input
+          class="chat-input"
+          [(ngModel)]="question"
+          (keydown)="onEnter($event)"
+          placeholder="Bir şeyler sorun..."
+        />
+        <button class="chat-send" (click)="sendMessage()" [disabled]="!question.trim()">
+          ➤
+        </button>
+      </div>
+    </div>
+  }
+</div>

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { Chat } from '../../../shared/chat/chat';
 
 interface Store {
   id: number;
@@ -46,7 +47,7 @@ interface Review {
 
 @Component({
   selector: 'app-corporate',
-  imports: [CommonModule, FormsModule],
+imports: [CommonModule, FormsModule, Chat],
   templateUrl: './corporate.html',
   styleUrl: './corporate.css',
 })
