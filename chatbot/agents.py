@@ -8,7 +8,7 @@ from database import execute_query, get_schema
 
 load_dotenv(dotenv_path=Path(__file__).parent / ".env")
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-model = genai.GenerativeModel("gemini-2.0-flash-lite")
+model = genai.GenerativeModel("gemini-2.5-flash")
 
 class AgentState(TypedDict):
     question: str
