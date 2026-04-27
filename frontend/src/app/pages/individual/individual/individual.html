@@ -100,10 +100,14 @@
               </div>
             </div>
             <div class="product-actions">
-              <button class="btn-primary" (click)="addToCart(product)" [disabled]="!product.stock || product.stock === 0">
+              <button class="btn-primary"
+                (click)="addToCart(product)"
+                [disabled]="!product.stock || product.stock === 0">
                 {{ !product.stock || product.stock === 0 ? 'Stok Yok' : '+ Sepete Ekle' }}
               </button>
-              <button class="btn-secondary" (click)="openReviewForm(product.id)">Yorum Yaz</button>
+              <button class="btn-secondary" (click)="openReviewForm(product.id, product.name)">
+                Yorum Yaz
+              </button>
             </div>
           </div>
         }
@@ -127,6 +131,7 @@
             <thead>
               <tr>
                 <th>Ürün</th>
+                <th>Mağaza</th>
                 <th>Fiyat</th>
                 <th>Adet</th>
                 <th>Toplam</th>
@@ -137,6 +142,7 @@
               @for (item of cart; track item.product.id) {
                 <tr>
                   <td>{{ item.product.name }}</td>
+                  <td>{{ item.product.store?.name ?? '—' }}</td>
                   <td>₺{{ item.product.discountedPrice ?? item.product.unitPrice }}</td>
                   <td>{{ item.quantity }}</td>
                   <td>₺{{ ((item.product.discountedPrice ?? item.product.unitPrice ?? 0) * item.quantity) | number:'1.2-2' }}</td>
@@ -161,6 +167,9 @@
         @if (showCheckout) {
           <div class="form-card">
             <h3>Sipariş Bilgileri</h3>
+            <p class="page-sub" style="margin-bottom: 12px;">
+              Mağaza: <strong>{{ cart[0].product.store?.name ?? '—' }}</strong>
+            </p>
             <div class="form-group">
               <label>Ödeme Yöntemi</label>
               <select class="form-input" [(ngModel)]="checkoutForm.paymentMethod">
@@ -238,7 +247,7 @@
 
       @if (showReviewForm) {
         <div class="form-card">
-          <h3>Yorum Yaz</h3>
+          <h3>Yorum Yaz — <span style="color: #6c63ff;">{{ reviewProductName }}</span></h3>
           <div class="form-grid">
             <div class="form-group">
               <label>Puan (1-5)</label>
@@ -296,5 +305,3 @@
 
   </main>
 </div>
-
-<app-chat [userRole]="'admin'" [userId]="1"></app-chat>

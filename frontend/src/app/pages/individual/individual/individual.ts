@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Chat } from '../../../shared/chat/chat';
 
 interface Product {
   id: number;
@@ -53,7 +52,7 @@ interface CartItem {
 
 @Component({
   selector: 'app-individual',
-  imports: [CommonModule, FormsModule, Chat],
+  imports: [CommonModule, FormsModule],
   templateUrl: './individual.html',
   styleUrl: './individual.css',
 })
@@ -63,21 +62,19 @@ export class IndividualComponent implements OnInit {
   products: Product[] = [];
   filteredProducts: Product[] = [];
   orders: Order[] = [];
-  shipments: Shipment[] = [];
   myReviews: Review[] = [];
   cart: CartItem[] = [];
 
   searchQuery = '';
   totalSpent = 0;
 
-  // Review form
   showReviewForm = false;
   reviewForm: Review = { starRating: 5, reviewTitle: '', reviewText: '' };
   reviewProductId: number | null = null;
+  reviewProductName = '';
 
-  // Checkout form
   showCheckout = false;
-  checkoutForm = { paymentMethod: 'credit_card', storeId: 1 };
+  checkoutForm = { paymentMethod: 'credit_card' };
 
   private apiUrl = 'http://localhost:8080/api';
 
@@ -98,7 +95,6 @@ export class IndividualComponent implements OnInit {
     return Number(localStorage.getItem('id'));
   }
 
-  // ÜRÜNLER
   loadProducts() {
     this.http.get<Product[]>(`${this.apiUrl}/products`).subscribe({
       next: (data) => { this.products = data; this.filteredProducts = data; },
@@ -113,7 +109,6 @@ export class IndividualComponent implements OnInit {
       : this.products;
   }
 
-  // SEPET
   addToCart(product: Product) {
     const existing = this.cart.find(c => c.product.id === product.id);
     if (existing) {
@@ -141,9 +136,10 @@ export class IndividualComponent implements OnInit {
   placeOrder() {
     if (this.cart.length === 0) return;
     const userId = this.getUserId();
+    const storeId = this.cart[0].product.store?.id ?? 1;
     const order = {
       user: { id: userId },
-      store: { id: this.checkoutForm.storeId },
+      store: { id: storeId },
       status: 'pending',
       paymentMethod: this.checkoutForm.paymentMethod,
       grandTotal: this.getCartTotal()
@@ -161,7 +157,6 @@ export class IndividualComponent implements OnInit {
     });
   }
 
-  // SİPARİŞLER
   loadOrders() {
     const userId = this.getUserId();
     this.http.get<Order[]>(`${this.apiUrl}/orders/user/${userId}`, this.getHeaders()).subscribe({
@@ -181,7 +176,6 @@ export class IndividualComponent implements OnInit {
     });
   }
 
-  // İNCELEMELER
   loadMyReviews() {
     const userId = this.getUserId();
     this.http.get<Review[]>(`${this.apiUrl}/reviews/user/${userId}`, this.getHeaders()).subscribe({
@@ -190,10 +184,12 @@ export class IndividualComponent implements OnInit {
     });
   }
 
-  openReviewForm(productId: number) {
+  openReviewForm(productId: number, productName: string) {
     this.reviewProductId = productId;
+    this.reviewProductName = productName;
     this.reviewForm = { starRating: 5, reviewTitle: '', reviewText: '' };
     this.showReviewForm = true;
+    this.setTab('reviews');
   }
 
   submitReview() {
@@ -208,6 +204,7 @@ export class IndividualComponent implements OnInit {
       next: (created) => {
         this.myReviews.unshift(created);
         this.showReviewForm = false;
+        this.reviewProductName = '';
       },
       error: () => alert('Yorum gönderilemedi.')
     });
