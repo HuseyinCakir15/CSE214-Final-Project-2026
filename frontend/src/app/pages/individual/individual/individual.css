@@ -327,3 +327,13 @@
 }
 
 .text-muted { color: #555; font-size: 13px; }
+
+.cash-info {
+  margin-top: 12px;
+  padding: 12px 16px;
+  background-color: rgba(108, 99, 255, 0.1);
+  border: 1px solid rgba(108, 99, 255, 0.3);
+  border-radius: 8px;
+  color: #aaa;
+  font-size: 14px;
+}

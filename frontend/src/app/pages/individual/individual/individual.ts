@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { Chat } from '../../../shared/chat/chat';
 
 interface Product {
   id: number;
@@ -25,16 +26,6 @@ interface Order {
   store?: { id: number; name: string };
 }
 
-interface Shipment {
-  id: number;
-  warehouse?: string;
-  mode?: string;
-  status: string;
-  city?: string;
-  state?: string;
-  order?: { id: number };
-}
-
 interface Review {
   id?: number;
   starRating?: number;
@@ -51,8 +42,9 @@ interface CartItem {
 }
 
 @Component({
+  standalone: true,
   selector: 'app-individual',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, Chat],
   templateUrl: './individual.html',
   styleUrl: './individual.css',
 })
@@ -74,7 +66,13 @@ export class IndividualComponent implements OnInit {
   reviewProductName = '';
 
   showCheckout = false;
-  checkoutForm = { paymentMethod: 'credit_card' };
+  checkoutForm = {
+    paymentMethod: 'credit_card',
+    cardNumber: '',
+    cardExpMonth: '',
+    cardExpYear: '',
+    cardCvv: ''
+  };
 
   private apiUrl = 'http://localhost:8080/api';
 
@@ -135,6 +133,22 @@ export class IndividualComponent implements OnInit {
 
   placeOrder() {
     if (this.cart.length === 0) return;
+
+    if (this.checkoutForm.paymentMethod === 'credit_card' || this.checkoutForm.paymentMethod === 'debit_card') {
+      if (!this.checkoutForm.cardNumber || this.checkoutForm.cardNumber.length < 16) {
+        alert('Geçerli bir kart numarası girin! (16 hane)');
+        return;
+      }
+      if (!this.checkoutForm.cardExpMonth || !this.checkoutForm.cardExpYear) {
+        alert('Son kullanım tarihini girin!');
+        return;
+      }
+      if (!this.checkoutForm.cardCvv || this.checkoutForm.cardCvv.length < 3) {
+        alert('CVV kodunu girin!');
+        return;
+      }
+    }
+
     const userId = this.getUserId();
     const storeId = this.cart[0].product.store?.id ?? 1;
     const order = {
@@ -144,11 +158,13 @@ export class IndividualComponent implements OnInit {
       paymentMethod: this.checkoutForm.paymentMethod,
       grandTotal: this.getCartTotal()
     };
+
     this.http.post<Order>(`${this.apiUrl}/orders`, order, this.getHeaders()).subscribe({
       next: (createdOrder) => {
         this.orders.unshift(createdOrder);
         this.cart = [];
         this.showCheckout = false;
+        this.checkoutForm = { paymentMethod: 'credit_card', cardNumber: '', cardExpMonth: '', cardExpYear: '', cardCvv: '' };
         this.totalSpent += createdOrder.grandTotal ?? 0;
         alert('Siparişiniz başarıyla oluşturuldu!');
         this.setTab('orders');

@@ -1,8 +1,8 @@
 package com.ecommerce.backend.controller;
 
 import com.ecommerce.backend.entity.User;
-import com.ecommerce.backend.repository.UserRepository;
 import com.ecommerce.backend.security.JwtUtil;
+import com.ecommerce.backend.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,34 +16,35 @@ import java.util.Optional;
 @CrossOrigin(origins = "http://localhost:4200")
 public class AuthController {
 
-    private final UserRepository userRepository;
+    // UserRepository yerine UserService — katmanlı mimari korundu
+    private final UserService userService;
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> request) {
-        String email = request.get("email");
+        String email    = request.get("email");
         String password = request.get("password");
 
-        Optional<User> userOpt = userRepository.findByEmail(email);
+        Optional<User> userOpt = userService.getUserByEmail(email);
 
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.badRequest().body("Kullanıcı bulunamadı!");
+        // ✅ Email enumeration açığı kapatıldı:
+        // "Kullanıcı bulunamadı" ve "Şifre yanlış" ayrı mesajlar
+        // saldırganın hangi email'in kayıtlı olduğunu anlamasına izin veriyordu.
+        // Her iki durumda da aynı mesaj döndürülüyor.
+        if (userOpt.isEmpty() || !passwordEncoder.matches(password, userOpt.get().getPasswordHash())) {
+            return ResponseEntity.status(401)
+                    .body(Map.of("message", "Email veya şifre hatalı!"));
         }
 
         User user = userOpt.get();
-
-        if (!passwordEncoder.matches(password, user.getPasswordHash())) {
-            return ResponseEntity.badRequest().body("Şifre yanlış!");
-        }
-
         String token = jwtUtil.generateToken(email, user.getRoleType().name());
 
         return ResponseEntity.ok(Map.of(
                 "token", token,
-                "role", user.getRoleType().name(),
+                "role",  user.getRoleType().name(),
                 "email", email,
-                "id", user.getId()
+                "id",    user.getId()
         ));
     }
 }

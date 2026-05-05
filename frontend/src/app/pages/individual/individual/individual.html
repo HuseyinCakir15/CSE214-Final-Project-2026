@@ -167,9 +167,10 @@
         @if (showCheckout) {
           <div class="form-card">
             <h3>Sipariş Bilgileri</h3>
-            <p class="page-sub" style="margin-bottom: 12px;">
+            <p class="page-sub" style="margin-bottom: 16px;">
               Mağaza: <strong>{{ cart[0].product.store?.name ?? '—' }}</strong>
             </p>
+
             <div class="form-group">
               <label>Ödeme Yöntemi</label>
               <select class="form-input" [(ngModel)]="checkoutForm.paymentMethod">
@@ -178,6 +179,62 @@
                 <option value="cash">Kapıda Ödeme</option>
               </select>
             </div>
+
+            @if (checkoutForm.paymentMethod === 'credit_card' || checkoutForm.paymentMethod === 'debit_card') {
+              <div class="form-group" style="margin-top: 14px;">
+                <label>Kart Numarası</label>
+                <input class="form-input" type="text" maxlength="16"
+                  [(ngModel)]="checkoutForm.cardNumber"
+                  placeholder="1234567890123456" />
+              </div>
+
+              <div class="form-grid" style="margin-top: 14px;">
+                <div class="form-group">
+                  <label>Son Kullanım Ay</label>
+                  <select class="form-input" [(ngModel)]="checkoutForm.cardExpMonth">
+                    <option value="">Ay seç</option>
+                    <option value="01">01 - Ocak</option>
+                    <option value="02">02 - Şubat</option>
+                    <option value="03">03 - Mart</option>
+                    <option value="04">04 - Nisan</option>
+                    <option value="05">05 - Mayıs</option>
+                    <option value="06">06 - Haziran</option>
+                    <option value="07">07 - Temmuz</option>
+                    <option value="08">08 - Ağustos</option>
+                    <option value="09">09 - Eylül</option>
+                    <option value="10">10 - Ekim</option>
+                    <option value="11">11 - Kasım</option>
+                    <option value="12">12 - Aralık</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Son Kullanım Yıl</label>
+                  <select class="form-input" [(ngModel)]="checkoutForm.cardExpYear">
+                    <option value="">Yıl seç</option>
+                    <option value="2025">2025</option>
+                    <option value="2026">2026</option>
+                    <option value="2027">2027</option>
+                    <option value="2028">2028</option>
+                    <option value="2029">2029</option>
+                    <option value="2030">2030</option>
+                    <option value="2031">2031</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>CVV</label>
+                  <input class="form-input" type="password" maxlength="3"
+                    [(ngModel)]="checkoutForm.cardCvv"
+                    placeholder="***" />
+                </div>
+              </div>
+            }
+
+            @if (checkoutForm.paymentMethod === 'cash') {
+              <div class="cash-info">
+                🚪 Kapıda ödeme seçildi. Teslimat sırasında nakit ödeme yapabilirsiniz.
+              </div>
+            }
+
             <div class="form-actions" style="margin-top: 16px;">
               <button class="btn-primary" (click)="placeOrder()">✅ Siparişi Onayla</button>
               <button class="btn-secondary" (click)="showCheckout = false">İptal</button>
@@ -305,3 +362,5 @@
 
   </main>
 </div>
+
+<app-chat></app-chat>

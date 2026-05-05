@@ -45,9 +45,15 @@ interface Review {
   product?: { id: number; name: string };
 }
 
+interface Category {
+  id: number;
+  name: string;
+}
+
 @Component({
+  standalone: true,
   selector: 'app-corporate',
-imports: [CommonModule, FormsModule, Chat],
+  imports: [CommonModule, FormsModule, Chat],
   templateUrl: './corporate.html',
   styleUrl: './corporate.css',
 })
@@ -58,11 +64,13 @@ export class Corporate implements OnInit {
   products: Product[] = [];
   orders: Order[] = [];
   reviews: Review[] = [];
+  categories: Category[] = [];
   totalRevenue = 0;
 
   showProductForm = false;
   editingProduct: Product | null = null;
   productForm: Product = { name: '', unitPrice: 0, stock: 0 };
+  selectedCategoryId: number | null = null;
 
   private apiUrl = 'http://localhost:8080/api';
 
@@ -70,6 +78,7 @@ export class Corporate implements OnInit {
 
   ngOnInit() {
     this.loadStore();
+    this.loadCategories();
   }
 
   getHeaders() {
@@ -93,6 +102,13 @@ export class Corporate implements OnInit {
           this.loadReviews();
         }
       },
+      error: () => {}
+    });
+  }
+
+  loadCategories() {
+    this.http.get<Category[]>(`${this.apiUrl}/categories`).subscribe({
+      next: (data) => this.categories = data,
       error: () => {}
     });
   }
@@ -125,7 +141,6 @@ export class Corporate implements OnInit {
   loadReviews() {
     this.http.get<Review[]>(`${this.apiUrl}/reviews`, this.getHeaders()).subscribe({
       next: (data) => {
-        // Kendi mağazasının ürünlerine ait reviewları filtrele
         const productIds = this.products.map(p => p.id);
         this.reviews = data.filter(r => productIds.includes(r.product?.id));
       },
@@ -136,18 +151,24 @@ export class Corporate implements OnInit {
   openAddProduct() {
     this.editingProduct = null;
     this.productForm = { name: '', unitPrice: 0, stock: 0 };
+    this.selectedCategoryId = null;
     this.showProductForm = true;
   }
 
   openEditProduct(product: Product) {
     this.editingProduct = product;
     this.productForm = { ...product };
+    this.selectedCategoryId = product.category?.id ?? null;
     this.showProductForm = true;
   }
 
   saveProduct() {
     if (!this.productForm.name.trim()) return;
-    const payload = { ...this.productForm, store: { id: this.store?.id } };
+    const payload = {
+      ...this.productForm,
+      store: { id: this.store?.id },
+      category: this.selectedCategoryId ? { id: this.selectedCategoryId } : null
+    };
 
     if (this.editingProduct?.id) {
       this.http.put<Product>(`${this.apiUrl}/products/${this.editingProduct.id}`, payload, this.getHeaders()).subscribe({

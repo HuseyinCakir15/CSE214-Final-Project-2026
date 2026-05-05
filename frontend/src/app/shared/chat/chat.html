@@ -1,11 +1,7 @@
 <!-- CHAT BUTTON -->
 <div class="chat-wrapper">
   <button class="chat-toggle" (click)="toggleChat()">
-    @if (isOpen) {
-      ✕
-    } @else {
-      🤖
-    }
+    @if (isOpen) { ✕ } @else { 🤖 }
   </button>
 
   @if (isOpen) {
@@ -25,14 +21,26 @@
       <!-- MESSAGES -->
       <div class="chat-messages">
         @for (msg of messages; track $index) {
-          <div class="message" [class.user]="msg.role === 'user'" [class.bot]="msg.role === 'bot'">
+          <div class="message"
+               [class.user]="msg.role === 'user'"
+               [class.bot]="msg.role === 'bot'">
+
             @if (msg.loading) {
               <div class="loading-dots">
                 <span></span><span></span><span></span>
               </div>
             } @else {
               <p class="message-text">{{ msg.text }}</p>
-              @if (msg.data && msg.data.length > 0) {
+
+              <!-- Plotly Grafik -->
+              @if (msg.plotlyJson) {
+                <div class="chart-container">
+                  <div [id]="'plotly-chart-' + $index" class="plotly-chart"></div>
+                </div>
+              }
+
+              <!-- Veri Tablosu (grafik yoksa) -->
+              @if (!msg.plotlyJson && msg.data && msg.data.length > 0) {
                 <div class="data-table-wrapper">
                   <table class="mini-table">
                     <thead>
@@ -60,6 +68,7 @@
             }
           </div>
         }
+        <div #messagesEnd></div>
       </div>
 
       <!-- INPUT -->
@@ -69,6 +78,7 @@
           [(ngModel)]="question"
           (keydown)="onEnter($event)"
           placeholder="Bir şeyler sorun..."
+          type="text"
         />
         <button class="chat-send" (click)="sendMessage()" [disabled]="!question.trim()">
           ➤

@@ -16,7 +16,10 @@ public class Review {
     @Column(name = "star_rating")
     private Double starRating;
 
-    private String sentiment;
+    // String yerine Enum — SQL şemasıyla birebir eşleşiyor
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Sentiment sentiment = Sentiment.neutral;
 
     @Column(name = "review_title")
     private String reviewTitle;
@@ -24,14 +27,35 @@ public class Review {
     @Column(name = "review_text", columnDefinition = "TEXT")
     private String reviewText;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne
-    @JoinColumn(name = "product_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", nullable = false)
     private Product product;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
+
+    // ─── İç Enum ───────────────────────────────────────────
+    public enum Sentiment {
+        positive,
+        neutral,
+        negative
+    }
 }

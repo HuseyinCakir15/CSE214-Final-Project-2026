@@ -36,6 +36,7 @@ interface Category {
 }
 
 @Component({
+  standalone: true,
   selector: 'app-admin',
   imports: [CommonModule, FormsModule, Chat],
   templateUrl: './admin.html',

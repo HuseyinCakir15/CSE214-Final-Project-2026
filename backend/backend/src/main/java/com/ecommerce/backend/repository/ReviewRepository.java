@@ -1,6 +1,7 @@
 package com.ecommerce.backend.repository;
 
 import com.ecommerce.backend.entity.Review;
+import com.ecommerce.backend.entity.Review.Sentiment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -15,7 +16,8 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     List<Review> findByStarRating(Double starRating);
 
-    List<Review> findBySentiment(String sentiment);
+    // String → Enum tipine güncellendi
+    List<Review> findBySentiment(Sentiment sentiment);
 
     @Query("SELECT r.product.id, r.product.name, COUNT(r) as reviewCount " +
            "FROM Review r GROUP BY r.product.id, r.product.name " +

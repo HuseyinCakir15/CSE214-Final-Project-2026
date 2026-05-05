@@ -1,10 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from typing import Optional
 from agents import ask
 
 app = FastAPI(title="E-Commerce Chatbot API")
 
+# Spring Boot (8080) ve Angular (4200) izin listesinde
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:4200", "http://localhost:8080"],
@@ -20,22 +22,24 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     answer: str
-    sql: str | None = None
+    sql: Optional[str] = None
     data: list = []
+    plotly_json: Optional[str] = None
 
 @app.get("/")
 def root():
     return {"status": "Chatbot API is running!"}
 
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
 @app.post("/chat/ask", response_model=ChatResponse)
 def chat(request: ChatRequest):
-    try:
-        result = ask(request.question, request.role, request.user_id)
-        return ChatResponse(
-            answer=result["answer"],
-            sql=result.get("sql"),
-            data=result.get("data", [])
-        )
-    except Exception as e:
-        from fastapi import HTTPException
-        raise HTTPException(status_code=500, detail=str(e))
+    result = ask(request.question, request.role, request.user_id)
+    return ChatResponse(
+        answer=result["answer"],
+        sql=result.get("sql"),
+        data=result.get("data", []),
+        plotly_json=result.get("plotly_json")
+    )

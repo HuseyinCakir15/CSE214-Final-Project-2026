@@ -1,6 +1,7 @@
 package com.ecommerce.backend.repository;
 
 import com.ecommerce.backend.entity.Order;
+import com.ecommerce.backend.entity.Order.OrderStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -13,9 +14,10 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     List<Order> findByStoreId(Long storeId);
 
-    List<Order> findByStatus(String status);
+    // String → Enum tipine güncellendi
+    List<Order> findByStatus(OrderStatus status);
 
-    List<Order> findByUserIdAndStatus(Long userId, String status);
+    List<Order> findByUserIdAndStatus(Long userId, OrderStatus status);
 
     @Query("SELECT SUM(o.grandTotal) FROM Order o WHERE o.store.id = :storeId")
     Double getTotalRevenueByStoreId(Long storeId);

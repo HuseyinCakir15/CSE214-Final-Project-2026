@@ -1,14 +1,18 @@
 package com.ecommerce.backend.service;
 
 import com.ecommerce.backend.entity.Order;
+import com.ecommerce.backend.entity.Order.OrderStatus;
 import com.ecommerce.backend.entity.OrderItem;
 import com.ecommerce.backend.entity.Shipment;
+import com.ecommerce.backend.entity.Shipment.ShipmentMode;
+import com.ecommerce.backend.entity.Shipment.ShipmentStatus;
 import com.ecommerce.backend.repository.OrderRepository;
 import com.ecommerce.backend.repository.OrderItemRepository;
 import com.ecommerce.backend.repository.ShipmentRepository;
 import com.ecommerce.backend.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,86 +25,80 @@ public class OrderService {
     private final ShipmentRepository shipmentRepository;
     private final ProductRepository productRepository;
 
-    // Tüm siparişleri getir (admin)
     public List<Order> getAllOrders() {
         return orderRepository.findAll();
     }
 
-    // ID'ye göre sipariş getir
     public Optional<Order> getOrderById(Long id) {
         return orderRepository.findById(id);
     }
 
-    // Kullanıcının siparişlerini getir
     public List<Order> getOrdersByUser(Long userId) {
         return orderRepository.findByUserId(userId);
     }
 
-    // Mağazanın siparişlerini getir
     public List<Order> getOrdersByStore(Long storeId) {
         return orderRepository.findByStoreId(storeId);
     }
 
-    // Duruma göre siparişleri getir
-    public List<Order> getOrdersByStatus(String status) {
+    // String → Enum: controller'dan gelen String değeri Enum'a parse ediliyor
+    public List<Order> getOrdersByStatus(String statusStr) {
+        OrderStatus status = OrderStatus.valueOf(statusStr.toLowerCase());
         return orderRepository.findByStatus(status);
     }
 
-    // Mağazanın toplam geliri
     public Double getTotalRevenue(Long storeId) {
         return orderRepository.getTotalRevenueByStoreId(storeId);
     }
 
-    // Sipariş oluştur
+    @Transactional
     public Order createOrder(Order order) {
-        // Siparişi kaydet
+        order.setStatus(OrderStatus.pending);
         Order savedOrder = orderRepository.save(order);
 
-        // Kargo kaydı otomatik oluştur
         Shipment shipment = new Shipment();
         shipment.setOrder(savedOrder);
-        shipment.setStatus("pending");
-        shipment.setMode("Road");
+        shipment.setStatus(ShipmentStatus.pending);   // String yerine Enum
+        shipment.setMode(ShipmentMode.Road);           // String yerine Enum
         shipment.setWarehouse("Warehouse-A");
         shipmentRepository.save(shipment);
 
         return savedOrder;
     }
 
-    // Sipariş durumunu güncelle
-    public Order updateOrderStatus(Long id, String status) {
+    // String → Enum: geçersiz status gelirse IllegalArgumentException fırlar
+    @Transactional
+    public Order updateOrderStatus(Long id, String statusStr) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Sipariş bulunamadı!"));
+
+        OrderStatus status = OrderStatus.valueOf(statusStr.toLowerCase());
         order.setStatus(status);
         return orderRepository.save(order);
     }
 
-    // Sipariş kalemlerini getir
     public List<OrderItem> getOrderItems(Long orderId) {
         return orderItemRepository.findByOrderId(orderId);
     }
 
-    // En çok satan ürünler
     public List<Object[]> getTopSellingProducts() {
         return orderItemRepository.findTopSellingProducts();
     }
 
-    // İade işlemi
-public Order refundOrder(Long id) {
-    Order order = orderRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Sipariş bulunamadı!"));
-    
-    // Sipariş durumunu güncelle
-    order.setStatus("cancelled");
-    orderRepository.save(order);
+    @Transactional
+    public Order refundOrder(Long id) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Sipariş bulunamadı!"));
 
-    // Kargo durumunu güncelle
-    Shipment shipment = shipmentRepository.findByOrderId(id);
-    if (shipment != null) {
-        shipment.setStatus("returned");
-        shipmentRepository.save(shipment);
+        order.setStatus(OrderStatus.refunded);   // String yerine Enum
+        orderRepository.save(order);
+
+        Shipment shipment = shipmentRepository.findByOrderId(id);
+        if (shipment != null) {
+            shipment.setStatus(ShipmentStatus.returned);  // String yerine Enum
+            shipmentRepository.save(shipment);
+        }
+
+        return order;
     }
-
-    return order;
-}
 }
